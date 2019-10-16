@@ -1,6 +1,8 @@
 package com.huch.common.tree;
 
 
+import com.alibaba.fastjson.JSON;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,10 +74,9 @@ public class TreeNodeTest {
         treeList1 = listToTree(list);
         treeList2 = toTree(list);
 
-//        Gson gson = new Gson();
-//        System.out.println(gson.toJson(treeList));
-//        System.out.println(gson.toJson(treeList1));
-//        System.out.println(gson.toJson(treeList2));
+        System.out.println(JSON.toJSONString(treeList));
+        System.out.println(JSON.toJSONString(treeList));
+        System.out.println(JSON.toJSONString(treeList));
     }
 
     private static List<TreeNodeTest> listGetStree(List<TreeNodeTest> list) {

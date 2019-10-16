@@ -1,5 +1,7 @@
 package com.huch.common.tree;
 
+import com.alibaba.fastjson.JSON;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,6 +70,17 @@ public class TreeBuilder {
     }
 
     /**
+     * tree转list
+     * @param trees
+     * @return
+     */
+    public static List<TreeNode> treeToList(List<TreeNode> trees){
+        List<TreeNode> list = new ArrayList<>();
+        iteratorTree(list, trees);
+        return list;
+    }
+
+    /**
      * trees转list
      * @param list
      * @param trees
@@ -110,10 +123,14 @@ public class TreeBuilder {
         list.add(treeNode10);
 
         List<TreeNode> trees = TreeBuilder.build(list, "0");
+        System.out.println(JSON.toJSONString(trees));
+
+        System.out.println(JSON.toJSONString(treeToList(trees)));
 
         List<TreeNode> list2 = new ArrayList<TreeNode>();
         iteratorTree(list2, trees);
-        System.out.println(list2);
+
+
 
 //        List<TreeNode> trees2 = TreeBuilder.buildByRecursive(list, "0");
 //        System.out.println(gson.toJson(trees2));

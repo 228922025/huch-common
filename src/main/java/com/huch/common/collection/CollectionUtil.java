@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  *
  */
-public class CollectionUtil{
+public class  CollectionUtil{
 
     private CollectionUtil(){
     }

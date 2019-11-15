@@ -53,6 +53,7 @@ public class EsSearch {
         SearchRequestBuilder search = client.prepareSearch("case_jgh_info").setTypes("case_jgh_info")
                 .setFrom(0)
                 .setSize(10)
+                .setFetchSource("字段", null)     // 返回指定字段
                 .setVersion(true)
                 .addSort("RKSJ", SortOrder.DESC);
         search.setQuery(query);

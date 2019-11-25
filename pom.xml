@@ -24,6 +24,14 @@
         </repository>
     </repositories>-->
 
+    <repositories>
+        <repository>
+            <id>com.e-iceblue</id>
+            <name>e-iceblue</name>
+            <url>http://repo.e-iceblue.com/nexus/content/groups/public/</url>
+        </repository>
+    </repositories>
+
     <build>
         <plugins>
             <plugin>
@@ -102,6 +110,12 @@
             <artifactId>junit</artifactId>
             <version>4.12</version>
         </dependency>
+
+            <dependency>
+                <groupId>e-iceblue</groupId>
+                <artifactId>spire.doc</artifactId>
+                <version>2.2.0</version>
+            </dependency>
 
     </dependencies>
 

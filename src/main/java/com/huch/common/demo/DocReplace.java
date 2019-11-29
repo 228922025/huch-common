@@ -100,7 +100,8 @@ public class DocReplace {
     }
 
     public static void main(String[] args) {
-        List<File> files = FileUtil.loopFiles(new File("/Users/huchanghua/Documents/000_temp/"));
+        String dir = args.length == 0 ? null: args[0];
+        List<File> files = FileUtil.loopFiles(new File(dir));
         for (File file: files){
             String fileName = file.getName();
             if(StrUtil.endWith(fileName, ".doc")){

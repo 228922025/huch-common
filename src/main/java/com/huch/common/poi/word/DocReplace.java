@@ -1,4 +1,4 @@
-package com.huch.common.poi.word;
+package com.huch.common.demo;
 
 import com.huch.common.io.FileUtil;
 import com.huch.common.util.StrUtil;
@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +25,7 @@ public class DocReplace {
 
     public static void replaceDoc(String path, Map<String, String> map){
         File file = new File(path);
+        String str = "";
         try {
             FileInputStream fis = new FileInputStream(file);
             HWPFDocument doc = new HWPFDocument(fis);
@@ -43,6 +45,7 @@ public class DocReplace {
 
     public static void replaceDocx(String path, Map<String, String> map){
         File file = new File(path);
+        String str = "";
         try {
             FileInputStream fis = new FileInputStream(file);
             XWPFDocument docx = new XWPFDocument(fis);
@@ -102,12 +105,11 @@ public class DocReplace {
         List<File> files = FileUtil.loopFiles(new File("/Users/huchanghua/Documents/000_temp/"));
         for (File file: files){
             String fileName = file.getName();
-            System.out.println(file.getAbsolutePath());
             if(StrUtil.endWith(fileName, ".doc")){
-                replaceDoc(file.getAbsolutePath(), map);
+                // replaceDoc();
             }
             else if(StrUtil.endWith(fileName, ".docx")){
-                replaceDoc(file.getAbsolutePath(), map);
+
             }
         }
     }

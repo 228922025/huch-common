@@ -37,9 +37,9 @@ import java.util.Map;
  */
 public class EsTest {
 
-    private final static String HOST = "192.6.12.1";
+    private final static String HOST = "192.1.1.41";
     private final static int PORT = 9300;
-    private final static String CLUSTERNAME = "udas";
+    private final static String CLUSTERNAME = "huch-es";
     private TransportClient client = null;
     private IndicesAdminClient adminClient = null;
 
@@ -77,14 +77,18 @@ public class EsTest {
         }
     }
 
+    /**
+     * 创建json格式数据
+     * @throws IOException
+     */
     @Test
     public void createJsonTest() throws IOException {
         EsTest es = new EsTest();
         XContentBuilder source = XContentFactory.jsonBuilder()
                 .startObject()
-                .field("user", "kimchy")
-                .field("postDate", new Date())
-                .field("message", "trying to Elasticsearch")
+                    .field("user", "kimchy")
+                    .field("postDate", new Date())
+                    .field("message", "trying to Elasticsearch")
                 .endObject();
         System.out.println(source.string());
         System.out.println(JSONObject.toJSONString(source));

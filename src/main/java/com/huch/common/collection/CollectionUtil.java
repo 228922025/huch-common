@@ -10,50 +10,12 @@ import java.util.Map;
 /**
  *
  */
-public class  CollectionUtil{
+public class  CollectionUtil extends CollUtil{
 
     private CollectionUtil(){
     }
 
-    /**
-     * 集合是否为空
-     *
-     * @param collection 集合
-     * @return 是否为空
-     */
-    public static boolean isEmpty(Collection<?> collection) {
-        return collection == null || collection.isEmpty();
-    }
 
-    /**
-     * 集合是否不为空
-     * @param collection
-     * @return
-     */
-    public static boolean isNotEmpty(Collection<?> collection){
-        return !isEmpty(collection);
-    }
-
-    /**
-     * Map是否为空
-     *
-     * @param map 集合
-     * @return 是否为空
-     * @see MapUtil#isEmpty(Map)
-     */
-    public static boolean isEmpty(Map<?, ?> map) {
-        return MapUtil.isEmpty(map);
-    }
-
-    /**
-     * Enumeration是否为空
-     *
-     * @param enumeration {@link Enumeration}
-     * @return 是否为空
-     */
-    public static boolean isEmpty(Enumeration<?> enumeration) {
-        return null == enumeration || false == enumeration.hasMoreElements();
-    }
 
 
 

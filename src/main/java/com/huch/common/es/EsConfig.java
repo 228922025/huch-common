@@ -24,7 +24,7 @@ public class EsConfig {
     }
 
 
-    public static void initialize() throws Exception {
+    public static void initialize(){
         Settings settings = Settings.builder().put("cluster.name", clustername).build();
         client = TransportClient.builder()
                 .settings(settings).build()

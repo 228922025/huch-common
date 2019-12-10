@@ -1,5 +1,8 @@
 package com.huch.common.util;
 
+import com.huch.common.collection.IterUtil;
+import com.huch.common.exception.UtilException;
+
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -1461,6 +1464,47 @@ public class ArrayUtil {
 	}
 
 	/**
+	 * 包装数组对象
+	 *
+	 * @param obj 对象，可以是对象数组或者基本类型数组
+	 * @return 包装类型数组或对象数组
+	 * @throws UtilException 对象为非数组
+	 */
+	public static Object[] wrap(Object obj) {
+		if (null == obj) {
+			return null;
+		}
+		if (isArray(obj)) {
+			try {
+				return (Object[]) obj;
+			} catch (Exception e) {
+				final String className = obj.getClass().getComponentType().getName();
+				switch (className) {
+					case "long":
+						return wrap((long[]) obj);
+					case "int":
+						return wrap((int[]) obj);
+					case "short":
+						return wrap((short[]) obj);
+					case "char":
+						return wrap((char[]) obj);
+					case "byte":
+						return wrap((byte[]) obj);
+					case "boolean":
+						return wrap((boolean[]) obj);
+					case "float":
+						return wrap((float[]) obj);
+					case "double":
+						return wrap((double[]) obj);
+					default:
+						throw new UtilException(e);
+				}
+			}
+		}
+		throw new UtilException(StrUtil.format("[{}] is not Array!", obj.getClass()));
+	}
+
+	/**
 	 * 对象是否为数组对象
 	 * 
 	 * @param obj 对象
@@ -1677,6 +1721,43 @@ public class ArrayUtil {
 			return 0;
 		}
 		return Array.getLength(array);
+	}
+
+	/**
+	 * 以 conjunction 为分隔符将数组转换为字符串
+	 *
+	 * @param <T> 被处理的集合
+	 * @param array 数组
+	 * @param conjunction 分隔符
+	 * @param prefix 每个元素添加的前缀，null表示不添加
+	 * @param suffix 每个元素添加的后缀，null表示不添加
+	 * @return 连接后的字符串
+	 * @since 4.0.10
+	 */
+	public static <T> String join(T[] array, CharSequence conjunction, String prefix, String suffix) {
+		if (null == array) {
+			return null;
+		}
+
+		final StringBuilder sb = new StringBuilder();
+		boolean isFirst = true;
+		for (T item : array) {
+			if (isFirst) {
+				isFirst = false;
+			} else {
+				sb.append(conjunction);
+			}
+			if (ArrayUtil.isArray(item)) {
+				sb.append(join(ArrayUtil.wrap(item), conjunction, prefix, suffix));
+			} else if (item instanceof Iterable<?>) {
+				sb.append(IterUtil.join((Iterable<?>) item, conjunction, prefix, suffix));
+			} else if (item instanceof Iterator<?>) {
+				sb.append(IterUtil.join((Iterator<?>) item, conjunction, prefix, suffix));
+			} else {
+				sb.append(StrUtil.wrap(StrUtil.toString(item), prefix, suffix));
+			}
+		}
+		return sb.toString();
 	}
 
 	/**

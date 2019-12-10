@@ -106,7 +106,7 @@ public class StrUtil {
 	 * @param str 被检测的字符串
 	 * @return 是否为空
 	 */
-	public static boolean isEmpty(String str) {
+	public static boolean isEmpty(CharSequence str) {
 		return str == null || str.length() == 0;
 	}
 

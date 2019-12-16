@@ -1,10 +1,8 @@
 package com.huch.common.io;
 
 import com.huch.common.collection.CollUtil;
-import com.huch.common.util.ArrayUtil;
-import com.huch.common.util.CharsetUtil;
-import com.huch.common.util.StrUtil;
-import com.huch.common.util.URLUtil;
+import com.huch.common.io.File.LineSeparator;
+import com.huch.common.util.*;
 
 import java.io.*;
 import java.net.URL;
@@ -47,6 +45,14 @@ public class FileUtil {
      */
     public static boolean isWindows() {
         return WINDOWS_SEPARATOR == File.separatorChar;
+    }
+
+    /**
+     * 是否为Unix环境
+     * @return
+     */
+    public static boolean isUnix(){
+        return UNIX_SEPARATOR == File.separatorChar;
     }
 
     /**
@@ -177,6 +183,112 @@ public class FileUtil {
     public static File file(String path) {
         if(StrUtil.isBlank(path)) throw new NullPointerException("File path is bland!");
         return new File(normalize(path));
+    }
+
+    /**
+     * 创建File对象<br>
+     * @param parent 父目录
+     * @param path 文件路径
+     * @return File
+     */
+    public static File file(String parent, String path) {
+        return new File(parent, path);
+    }
+
+    /**
+     * 创建File对象<br>
+     * @param parent 父目录
+     * @param path 文件路径
+     * @return File
+     */
+    public static File file(File parent, String path) {
+        return new File(parent, path);
+    }
+
+    /**
+     * 返回主文件名
+     *
+     * @param file 文件
+     * @return 主文件名
+     */
+    public static String mainName(File file) {
+        if (file.isDirectory()) {
+            return file.getName();
+        }
+        return mainName(file.getName());
+    }
+
+    /**
+     * 返回主文件名, 文件名没有后缀
+     *
+     * @param fileName 完整文件名
+     * @return 主文件名
+     */
+    public static String mainName(String fileName) {
+        if (null == fileName) {
+            return fileName;
+        }
+        int len = fileName.length();
+        if (0 == len) {
+            return fileName;
+        }
+        if (CharUtil.isFileSeparator(fileName.charAt(len - 1))) {
+            len--;
+        }
+
+        int begin = 0;
+        int end = len;
+        char c;
+        for (int i = len - 1; i > -1; i--) {
+            c = fileName.charAt(i);
+            if (len == end && CharUtil.DOT == c) {
+                // 查找最后一个文件名和扩展名的分隔符：.
+                end = i;
+            }
+            if (0 == begin || begin > end) {
+                if (CharUtil.isFileSeparator(c)) {
+                    // 查找最后一个路径分隔符（/或者\），如果这个分隔符在.之后，则继续查找，否则结束
+                    begin = i + 1;
+                    break;
+                }
+            }
+        }
+
+        return fileName.substring(begin, end);
+    }
+
+
+
+    /**
+     * 创建文件夹，如果存在直接返回此文件夹<br>
+     * 此方法不对File对象类型做判断，如果File不存在，无法判断其类型
+     *
+     * @param dirPath 文件夹路径，使用POSIX格式，无论哪个平台
+     * @return 创建的目录
+     */
+    public static File mkdir(String dirPath) {
+        if (dirPath == null) {
+            return null;
+        }
+        final File dir = file(dirPath);
+        return mkdir(dir);
+    }
+
+    /**
+     * 创建文件夹，会递归自动创建其不存在的父文件夹，如果存在直接返回此文件夹<br>
+     * 此方法不对File对象类型做判断，如果File不存在，无法判断其类型
+     *
+     * @param dir 目录
+     * @return 创建的目录
+     */
+    public static File mkdir(File dir) {
+        if (dir == null) {
+            return null;
+        }
+        if (false == dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir;
     }
 
     /**
@@ -347,27 +459,26 @@ public class FileUtil {
     }
 
     /**
-     * 将String写入文件，覆盖模式，字符集为UTF-8
-     *
-     * @param content 写入的内容
-     * @param path 文件路径
-     * @return 写入的文件
-     * @throws IORuntimeException IO异常
+     * 将Sring写入到文件
+     * @param content 内容
+     * @param path  路径
+     * @param charset 编码格式
+     * @param append  是否是追加模式
+     * @return
      */
-    public static File writeUtf8String(String content, String path) throws IORuntimeException {
-        return writeString(content, path, CharsetUtil.CHARSET_UTF_8);
-    }
-
-    /**
-     * 将String写入文件，覆盖模式，字符集为UTF-8
-     *
-     * @param content 写入的内容
-     * @param file 文件
-     * @return 写入的文件
-     * @throws IORuntimeException IO异常
-     */
-    public static File writeUtf8String(String content, File file) throws IORuntimeException {
-        return writeString(content, file, CharsetUtil.CHARSET_UTF_8);
+    public static File writeString(String content, String path, String charset,  boolean append){
+        File file = file(path);
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, append), charset));;
+            writer.write(content);
+            writer.flush();
+        }catch(IOException e){
+            throw new IORuntimeException(e);
+        }finally {
+            IOUtil.close(writer);
+        }
+        return file;
     }
 
     /**
@@ -380,39 +491,43 @@ public class FileUtil {
      * @throws IORuntimeException IO异常
      */
     public static File writeString(String content, String path, String charset) throws IORuntimeException {
-        return writeString(content, file(path), charset);
+        return writeString(content, path, charset, false);
     }
 
     /**
-     * 将String写入文件，覆盖模式
-     *
+     * 将String写入到文件, 覆盖模式, 默认字符集UTF-8
      * @param content 写入的内容
      * @param path 文件路径
-     * @param charset 字符集
-     * @return 写入的文件
-     * @throws IORuntimeException IO异常
+     * @return
      */
-    public static File writeString(String content, String path, Charset charset) throws IORuntimeException {
-        return writeString(content, file(path), charset);
+    public static File writeString(String content, String path){
+        return writeString(content, path, "UTF-8");
     }
 
     /**
-     * 将String写入文件，覆盖模式
-     *
+     * 将String写入文件, 覆盖模式, 字符集为UTF-8
+     * @param content
+     * @param file
+     * @return
+     */
+    public static File writeString(String content, File file){
+        return writeString(content, file, "UTF-8");
+    }
+
+    /**
+     * 将String写入文件，覆盖模式，字符集为UTF-8
      *
      * @param content 写入的内容
      * @param file 文件
-     * @param charset 字符集
-     * @return 被写入的文件
+     * @return 写入的文件
      * @throws IORuntimeException IO异常
      */
     public static File writeString(String content, File file, String charset) throws IORuntimeException {
-        return FileWriter.create(file, CharsetUtil.charset(charset)).write(content);
+        return writeString(content, file, charset, false);
     }
 
     /**
      * 将String写入文件，覆盖模式
-     *
      *
      * @param content 写入的内容
      * @param file 文件
@@ -420,9 +535,21 @@ public class FileUtil {
      * @return 被写入的文件
      * @throws IORuntimeException IO异常
      */
-    public static File writeString(String content, File file, Charset charset) throws IORuntimeException {
-        return FileWriter.create(file, charset).write(content);
+    public static File writeString(String content, File file, String charset, boolean append){
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, append), charset));;
+            writer.write(content);
+            writer.flush();
+        }catch(IOException e){
+            throw new IORuntimeException(e);
+        }finally {
+            IOUtil.close(writer);
+        }
+        return file;
     }
+
+
 
     /**
      * 将String写入文件，UTF-8编码追加模式
@@ -433,8 +560,8 @@ public class FileUtil {
      * @throws IORuntimeException IO异常
      * @since 3.1.2
      */
-    public static File appendUtf8String(String content, String path) throws IORuntimeException {
-        return appendString(content, path, CharsetUtil.CHARSET_UTF_8);
+    public static File appendString(String content, String path) throws IORuntimeException {
+        return appendString(content, path, "UTF-8");
     }
 
     /**
@@ -446,21 +573,8 @@ public class FileUtil {
      * @return 写入的文件
      * @throws IORuntimeException IO异常
      */
-    public static File appendString(String content, String path, String charset) throws IORuntimeException {
-        return appendString(content, touch(path), charset);
-    }
-
-    /**
-     * 将String写入文件，追加模式
-     *
-     * @param content 写入的内容
-     * @param path 文件路径
-     * @param charset 字符集
-     * @return 写入的文件
-     * @throws IORuntimeException IO异常
-     */
-    public static File appendString(String content, String path, Charset charset) throws IORuntimeException {
-        return appendString(content, touch(path), charset);
+    public static File appendString(String content, String path, String charset) {
+        return writeString(content, path, charset, true);
     }
 
     /**
@@ -472,8 +586,8 @@ public class FileUtil {
      * @throws IORuntimeException IO异常
      * @since 3.1.2
      */
-    public static File appendUtf8String(String content, File file) throws IORuntimeException {
-        return appendString(content, file, CharsetUtil.CHARSET_UTF_8);
+    public static File appendString(String content, File file) throws IORuntimeException {
+        return appendString(content, file, "UTF-8");
     }
 
     /**
@@ -486,20 +600,7 @@ public class FileUtil {
      * @throws IORuntimeException IO异常
      */
     public static File appendString(String content, File file, String charset) throws IORuntimeException {
-        return FileWriter.create(file, CharsetUtil.charset(charset)).append(content);
-    }
-
-    /**
-     * 将String写入文件，追加模式
-     *
-     * @param content 写入的内容
-     * @param file 文件
-     * @param charset 字符集
-     * @return 写入的文件
-     * @throws IORuntimeException IO异常
-     */
-    public static File appendString(String content, File file, Charset charset) throws IORuntimeException {
-        return FileWriter.create(file, charset).append(content);
+        return writeString(content, file, charset, true);
     }
 
     /**
@@ -512,7 +613,7 @@ public class FileUtil {
      * @throws IORuntimeException IO异常
      * @since 3.2.0
      */
-    public static <T> File writeUtf8Lines(Collection<T> list, String path) throws IORuntimeException {
+    public static <T> File writeLines(Collection<T> list, String path) throws IORuntimeException {
         return writeLines(list, path, CharsetUtil.CHARSET_UTF_8);
     }
 
@@ -526,7 +627,7 @@ public class FileUtil {
      * @throws IORuntimeException IO异常
      * @since 3.2.0
      */
-    public static <T> File writeUtf8Lines(Collection<T> list, File file) throws IORuntimeException {
+    public static <T> File writeLines(Collection<T> list, File file) throws IORuntimeException {
         return writeLines(list, file, CharsetUtil.CHARSET_UTF_8);
     }
 
@@ -585,7 +686,7 @@ public class FileUtil {
      * @since 4.2.0
      */
     public static <T> File writeLines(Collection<T> list, File file, Charset charset) throws IORuntimeException {
-        return writeLines(list, file, charset, false);
+        return writeLines(list, file, charset.toString(), false);
     }
 
     /**
@@ -598,8 +699,8 @@ public class FileUtil {
      * @throws IORuntimeException IO异常
      * @since 3.1.2
      */
-    public static <T> File appendUtf8Lines(Collection<T> list, File file) throws IORuntimeException {
-        return appendLines(list, file, CharsetUtil.CHARSET_UTF_8);
+    public static <T> File appendLines(Collection<T> list, File file) throws IORuntimeException {
+        return appendLines(list, file, "UTF-8");
     }
 
     /**
@@ -612,7 +713,7 @@ public class FileUtil {
      * @throws IORuntimeException IO异常
      * @since 3.1.2
      */
-    public static <T> File appendUtf8Lines(Collection<T> list, String path) throws IORuntimeException {
+    public static <T> File appendLines(Collection<T> list, String path) throws IORuntimeException {
         return appendLines(list, path, CharsetUtil.CHARSET_UTF_8);
     }
 
@@ -660,21 +761,6 @@ public class FileUtil {
     }
 
     /**
-     * 将列表写入文件，追加模式
-     *
-     * @param <T> 集合元素类型
-     * @param list 列表
-     * @param file 文件
-     * @param charset 字符集
-     * @return 目标文件
-     * @throws IORuntimeException IO异常
-     * @since 3.1.2
-     */
-    public static <T> File appendLines(Collection<T> list, File file, Charset charset) throws IORuntimeException {
-        return writeLines(list, file, charset, true);
-    }
-
-    /**
      * 将列表写入文件
      *
      * @param <T> 集合元素类型
@@ -701,7 +787,7 @@ public class FileUtil {
      * @throws IORuntimeException IO异常
      */
     public static <T> File writeLines(Collection<T> list, String path, Charset charset, boolean isAppend) throws IORuntimeException {
-        return writeLines(list, file(path), charset, isAppend);
+        return writeLines(list, file(path), charset.toString(), isAppend);
     }
 
     /**
@@ -715,23 +801,22 @@ public class FileUtil {
      * @return 目标文件
      * @throws IORuntimeException IO异常
      */
-    public static <T> File writeLines(Collection<T> list, File file, String charset, boolean isAppend) throws IORuntimeException {
-        return FileWriter.create(file, CharsetUtil.charset(charset)).writeLines(list, isAppend);
-    }
+    public static <T> File writeLines(Collection<T> list, File file, String charset, boolean isAppend){
+        try (PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, isAppend), charset)))){
+            for (T t : list) {
+                if (null != t) {
+                    writer.print(t.toString());
+                    printNewLine(writer, null);
+                    writer.flush();
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
 
-    /**
-     * 将列表写入文件
-     *
-     * @param <T> 集合元素类型
-     * @param list 列表
-     * @param file 文件
-     * @param charset 字符集
-     * @param isAppend 是否追加
-     * @return 目标文件
-     * @throws IORuntimeException IO异常
-     */
-    public static <T> File writeLines(Collection<T> list, File file, Charset charset, boolean isAppend) throws IORuntimeException {
-        return FileWriter.create(file, charset).writeLines(list, isAppend);
+        return file;
     }
 
     /**
@@ -745,9 +830,9 @@ public class FileUtil {
      * @throws IORuntimeException IO异常
      * @since 4.0.5
      */
-    public static File writeUtf8Map(Map<?, ?> map, File file, String kvSeparator, boolean isAppend) throws IORuntimeException {
+    /*public static File writeUtf8Map(Map<?, ?> map, File file, String kvSeparator, boolean isAppend) throws IORuntimeException {
         return FileWriter.create(file, CharsetUtil.CHARSET_UTF_8).writeMap(map, kvSeparator, isAppend);
-    }
+    }*/
 
     /**
      * 将Map写入文件，每个键值对为一行，一行中键与值之间使用kvSeparator分隔
@@ -761,9 +846,9 @@ public class FileUtil {
      * @throws IORuntimeException IO异常
      * @since 4.0.5
      */
-    public static File writeMap(Map<?, ?> map, File file, Charset charset, String kvSeparator, boolean isAppend) throws IORuntimeException {
+    /*public static File writeMap(Map<?, ?> map, File file, Charset charset, String kvSeparator, boolean isAppend) throws IORuntimeException {
         return FileWriter.create(file, charset).writeMap(map, kvSeparator, isAppend);
-    }
+    }*/
 
 
     /**
@@ -774,9 +859,9 @@ public class FileUtil {
      * @return 目标文件
      * @throws IORuntimeException IO异常
      */
-    public static File writeBytes(byte[] data, String path) throws IORuntimeException {
+    /*public static File writeBytes(byte[] data, String path) throws IORuntimeException {
         return writeBytes(data, file(path));
-    }
+    }*/
 
     /**
      * 写数据到文件中
@@ -786,9 +871,9 @@ public class FileUtil {
      * @return 目标文件
      * @throws IORuntimeException IO异常
      */
-    public static File writeBytes(byte[] data, File dest) throws IORuntimeException {
+    /*public static File writeBytes(byte[] data, File dest) throws IORuntimeException {
         return writeBytes(data, dest, 0, data.length, false);
-    }
+    }*/
 
     /**
      * 写入数据到文件
@@ -801,9 +886,9 @@ public class FileUtil {
      * @return 目标文件
      * @throws IORuntimeException IO异常
      */
-    public static File writeBytes(byte[] data, File dest, int off, int len, boolean isAppend) throws IORuntimeException {
+    /*public static File writeBytes(byte[] data, File dest, int off, int len, boolean isAppend) throws IORuntimeException {
         return FileWriter.create(dest).write(data, off, len, isAppend);
-    }
+    }*/
 
     /**
      * 将流的内容写入文件<br>
@@ -813,9 +898,9 @@ public class FileUtil {
      * @return dest
      * @throws IORuntimeException IO异常
      */
-    public static File writeFromStream(InputStream in, File dest) throws IORuntimeException {
+    /*public static File writeFromStream(InputStream in, File dest) throws IORuntimeException {
         return FileWriter.create(dest).writeFromStream(in);
-    }
+    }*/
 
     /**
      * 将流的内容写入文件<br>
@@ -825,9 +910,9 @@ public class FileUtil {
      * @return 目标文件
      * @throws IORuntimeException IO异常
      */
-    public static File writeFromStream(InputStream in, String fullFilePath) throws IORuntimeException {
-        return writeFromStream(in, touch(fullFilePath));
-    }
+    /*public static File writeFromStream(InputStream in, String fullFilePath) throws IORuntimeException {
+        return writeFromStream(in, file(fullFilePath));
+    }*/
 
     /**
      * 将文件写入流中
@@ -837,9 +922,9 @@ public class FileUtil {
      * @return 目标文件
      * @throws IORuntimeException IO异常
      */
-    public static File writeToStream(File file, OutputStream out) throws IORuntimeException {
+    /*public static File writeToStream(File file, OutputStream out) throws IORuntimeException {
         return FileReader.create(file).writeToStream(out);
-    }
+    }*/
 
     /**
      * 将流的内容写入文件<br>
@@ -848,9 +933,9 @@ public class FileUtil {
      * @param out 输出流
      * @throws IORuntimeException IO异常
      */
-    public static void writeToStream(String fullFilePath, OutputStream out) throws IORuntimeException {
+    /*public static void writeToStream(String fullFilePath, OutputStream out) throws IORuntimeException {
         writeToStream(touch(fullFilePath), out);
-    }
+    }*/
 
 
 
@@ -1681,8 +1766,25 @@ public class FileUtil {
      * @since 3.1.0
      */
     public static File convertCharset(File file, Charset srcCharset, Charset destCharset) {
-        final String str = FileUtil.readString(file, srcCharset);
-        return FileUtil.writeString(str, file, destCharset);
+        final String str = readString(file, srcCharset);
+        return writeString(str, file, destCharset.toString());
+    }
+
+
+    /**
+     * 打印新行
+     * @param writer Writer
+     * @param lineSeparator 换行符枚举
+     * @since 4.0.5
+     */
+    private static void printNewLine(PrintWriter writer, LineSeparator lineSeparator) {
+        if(null == lineSeparator) {
+            //默认换行符
+            writer.println();
+        }else {
+            //自定义换行符
+            writer.print(lineSeparator.getValue());
+        }
     }
 
 

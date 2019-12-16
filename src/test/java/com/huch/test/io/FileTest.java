@@ -1,7 +1,7 @@
 package com.huch.test.io;
 
 import com.huch.common.io.FileUtil;
-import com.huch.common.io.NioFileUtil;
+import com.huch.common.io.NIOFileUtil;
 import org.junit.Test;
 
 import java.io.*;
@@ -80,7 +80,7 @@ public class FileTest {
         File target = new File("/Users/huchanghua/Documents/test/02");
 
         long startTime = System.currentTimeMillis();
-        NioFileUtil.writeToFile(new FileInputStream(file), target);
+        NIOFileUtil.writeToFile(new FileInputStream(file), target);
         long endTime = System.currentTimeMillis();
         System.out.println(endTime - startTime + "毫秒");
 
@@ -94,7 +94,7 @@ public class FileTest {
 
         long startTime = System.currentTimeMillis();
         for(int i = 0; i < 10; i++){
-            NioFileUtil.copyFile(file, new File("/Users/huchanghua/Documents/test/" + i + ".gz"));
+            NIOFileUtil.copyFile(file, new File("/Users/huchanghua/Documents/test/" + i + ".gz"));
         }
         long endTime = System.currentTimeMillis();
         System.out.println(endTime - startTime + "毫秒");

@@ -8,7 +8,7 @@ import java.nio.channels.ReadableByteChannel;
 /**
  * 使用nio以提高性能
  */
-public class NioFileUtil {
+public class NIOFileUtil {
 
     /**
      * 写数据到文件

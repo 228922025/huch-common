@@ -2,6 +2,7 @@ package com.huch.common.es;
 
 import org.junit.Test;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
@@ -19,4 +20,6 @@ public class Test2 {
         System.out.println(list.size());
         System.out.println(client.searchAll());
     }
+
+
 }

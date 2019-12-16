@@ -1,11 +1,14 @@
 package com.huch.common.util;
 
 import com.huch.common.exception.UtilException;
+import com.huch.common.io.FileUtil;
 import com.huch.common.io.IORuntimeException;
 import com.huch.common.io.IOUtil;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.zip.*;
 
@@ -65,6 +68,12 @@ public class ZipUtil {
 	 * @throws UtilException IO异常
 	 */
 	public static File zip(File srcFile, Charset charset) throws UtilException {
+		String filename = "";
+		if(srcFile.isDirectory()){
+			filename = srcFile.getName();
+		}else{
+
+		}
 		final File zipFile = FileUtil.file(srcFile.getParentFile(), FileUtil.mainName(srcFile) + ".zip");
 		zip(zipFile, charset, false, srcFile);
 		return zipFile;
@@ -188,7 +197,7 @@ public class ZipUtil {
 	 * @since 3.2.2
 	 */
 	public static File zip(File zipFile, String path, String data, Charset charset) throws UtilException {
-		return zip(zipFile, path, IoUtil.toStream(data, charset), charset);
+		return zip(zipFile, path, IOUtil.toStream(data, charset), charset);
 	}
 
 	/**
@@ -263,7 +272,7 @@ public class ZipUtil {
 				addFile(ins[i], paths[i], out);
 			}
 		} finally {
-			IoUtil.close(out);
+			IOUtil.close(out);
 		}
 		return zipFile;
 	}
@@ -403,7 +412,7 @@ public class ZipUtil {
 				}
 			}
 		} finally {
-			IoUtil.close(zipFile);
+			IOUtil.close(zipFile);
 		}
 		return outFile;
 	}
@@ -454,7 +463,7 @@ public class ZipUtil {
 		} catch (IOException e) {
 			throw new UtilException(e);
 		} finally {
-			IoUtil.close(zipStream);
+			IOUtil.close(zipStream);
 		}
 		return outFile;
 	}
@@ -517,13 +526,13 @@ public class ZipUtil {
 				if (zipEntry.isDirectory()) {
 					continue;
 				} else if (name.equals(zipEntry.getName())) {
-					return IoUtil.readBytes(zipFileObj.getInputStream(zipEntry));
+					return IOUtil.readBytes(zipFileObj.getInputStream(zipEntry));
 				}
 			}
 		} catch (IOException e) {
 			throw new UtilException(e);
 		} finally {
-			IoUtil.close(zipFileObj);
+			IOUtil.close(zipFileObj);
 		}
 		return null;
 	}
@@ -562,10 +571,10 @@ public class ZipUtil {
 	public static byte[] gzip(File file) throws UtilException {
 		BufferedInputStream in = null;
 		try {
-			in = FileUtil.getInputStream(file);
+			in = new BufferedInputStream(Files.newInputStream(Paths.get(file.)));
 			return gzip(in, (int) file.length());
 		} finally {
-			IoUtil.close(in);
+			IOUtil.close(in);
 		}
 	}
 
@@ -595,11 +604,11 @@ public class ZipUtil {
 		GZIPOutputStream gos = null;
 		try {
 			gos = new GZIPOutputStream(bos);
-			IoUtil.copy(in, gos);
+			IOUtil.copy(in, gos);
 		} catch (IOException e) {
 			throw new UtilException(e);
 		} finally {
-			IoUtil.close(gos);
+			IOUtil.close(gos);
 		}
 		// 返回必须在关闭gos后进行，因为关闭时会自动执行finish()方法，保证数据全部写出
 		return bos.toByteArray();
@@ -654,11 +663,11 @@ public class ZipUtil {
 		try {
 			gzi = (in instanceof GZIPInputStream) ? (GZIPInputStream) in : new GZIPInputStream(in);
 			bos = new FastByteArrayOutputStream(length);
-			IoUtil.copy(gzi, bos);
+			IOUtil.copy(gzi, bos);
 		} catch (IOException e) {
 			throw new UtilException(e);
 		} finally {
-			IoUtil.close(gzi);
+			IOUtil.close(gzi);
 		}
 		// 返回必须在关闭gos后进行，因为关闭时会自动执行finish()方法，保证数据全部写出
 		return bos.toByteArray();
@@ -690,10 +699,12 @@ public class ZipUtil {
 	public static byte[] zlib(File file, int level) {
 		BufferedInputStream in = null;
 		try {
-			in = FileUtil.getInputStream(file);
+			in = new BufferedInputStream(Files.newInputStream(Paths.get(file.getAbsolutePath())));
 			return zlib(in, level, (int) file.length());
+		} catch (IOException e) {
+			e.printStackTrace();
 		} finally {
-			IoUtil.close(in);
+			IOUtil.close(in);
 		}
 	}
 
@@ -851,10 +862,12 @@ public class ZipUtil {
 	private static void addFile(File file, String path, ZipOutputStream out) throws UtilException {
 		BufferedInputStream in = null;
 		try {
-			in = FileUtil.getInputStream(file);
+			in = new BufferedInputStream(Files.newInputStream(Paths.get(file.getAbsolutePath())));
 			addFile(in, path, out);
+		} catch (IOException e) {
+			e.printStackTrace();
 		} finally {
-			IoUtil.close(in);
+			IOUtil.close(in);
 		}
 	}
 
@@ -872,7 +885,7 @@ public class ZipUtil {
 		}
 		try {
 			out.putNextEntry(new ZipEntry(path));
-			IoUtil.copy(in, out);
+			IOUtil.copy(in, out);
 		} catch (IOException e) {
 			throw new UtilException(e);
 		} finally {
@@ -902,7 +915,7 @@ public class ZipUtil {
 	 * 判断压缩文件保存的路径是否为源文件路径的子文件夹，如果是，则抛出异常（防止无限递归压缩的发生）
 	 * 
 	 * @param zipFile 压缩后的产生的文件路径
-	 * @param srcFile 被压缩的文件或目录
+	 * @param srcFiles 被压缩的文件或目录
 	 */
 	private static void validateFiles(File zipFile, File... srcFiles) throws UtilException {
 		if (zipFile.isDirectory()) {
@@ -939,6 +952,7 @@ public class ZipUtil {
 		try {
 			out.closeEntry();
 		} catch (IOException e) {
+			e.printStackTrace();
 			// ignore
 		}
 	}
@@ -955,7 +969,6 @@ public class ZipUtil {
 		InputStream in = null;
 		try {
 			in = zipFile.getInputStream(zipEntry);
-			IOUtil.w
 			FileUtil.writeFromStream(in, outItemFile);
 		} catch (IOException e) {
 			throw new IORuntimeException(e);

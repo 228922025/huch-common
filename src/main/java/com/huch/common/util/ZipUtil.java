@@ -571,8 +571,10 @@ public class ZipUtil {
 	public static byte[] gzip(File file) throws UtilException {
 		BufferedInputStream in = null;
 		try {
-			in = new BufferedInputStream(Files.newInputStream(Paths.get(file.)));
+			in = new BufferedInputStream(new FileInputStream(file));
 			return gzip(in, (int) file.length());
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		} finally {
 			IOUtil.close(in);
 		}
@@ -659,10 +661,10 @@ public class ZipUtil {
 	 */
 	public static byte[] unGzip(InputStream in, int length) throws UtilException {
 		GZIPInputStream gzi = null;
-		FastByteArrayOutputStream bos = null;
+		ByteArrayOutputStream bos = null;
 		try {
 			gzi = (in instanceof GZIPInputStream) ? (GZIPInputStream) in : new GZIPInputStream(in);
-			bos = new FastByteArrayOutputStream(length);
+			bos = new ByteArrayOutputStream(length);
 			IOUtil.copy(gzi, bos);
 		} catch (IOException e) {
 			throw new UtilException(e);
@@ -804,13 +806,19 @@ public class ZipUtil {
 	 * @return {@link ZipOutputStream}
 	 */
 	private static ZipOutputStream getZipOutputStream(File zipFile, Charset charset) {
-		return getZipOutputStream(FileUtil.getOutputStream(zipFile), charset);
+		BufferedOutputStream bos = null;
+		try {
+			bos = new BufferedOutputStream(new FileOutputStream(zipFile));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		return getZipOutputStream(bos, charset);
 	}
 
 	/**
 	 * 获得 {@link ZipOutputStream}
 	 * 
-	 * @param zipFile 压缩文件
+	 * @param out 压缩文件流
 	 * @param charset 编码
 	 * @return {@link ZipOutputStream}
 	 */

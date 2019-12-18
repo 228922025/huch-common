@@ -166,6 +166,55 @@ public class FileUtil {
     }
 
     /**
+     * 获得相对子路径
+     *
+     * 栗子：
+     *
+     * <pre>
+     * dirPath: d:/aaa/bbb    filePath: d:/aaa/bbb/ccc     =》    ccc
+     * dirPath: d:/Aaa/bbb    filePath: d:/aaa/bbb/ccc.txt     =》    ccc.txt
+     * </pre>
+     *
+     * @param rootDir 绝对父路径
+     * @param file 文件
+     * @return 相对子路径
+     */
+    public static String subPath(String rootDir, File file) {
+        try {
+            return subPath(rootDir, file.getCanonicalPath());
+        } catch (IOException e) {
+            throw new IORuntimeException(e);
+        }
+    }
+
+    /**
+     * 获得相对子路径，忽略大小写
+     *
+     * 栗子：
+     *
+     * <pre>
+     * dirPath: d:/aaa/bbb    filePath: d:/aaa/bbb/ccc     =》    ccc
+     * dirPath: d:/Aaa/bbb    filePath: d:/aaa/bbb/ccc.txt     =》    ccc.txt
+     * dirPath: d:/Aaa/bbb    filePath: d:/aaa/bbb/     =》    ""
+     * </pre>
+     *
+     * @param dirPath 父路径
+     * @param filePath 文件路径
+     * @return 相对子路径
+     */
+    public static String subPath(String dirPath, String filePath) {
+        if (StrUtil.isNotEmpty(dirPath) && StrUtil.isNotEmpty(filePath)) {
+
+            dirPath = StrUtil.removeSuffix(normalize(dirPath), "/");
+            filePath = normalize(filePath);
+
+            final String result = StrUtil.removePrefixIgnoreCase(filePath, dirPath);
+            return StrUtil.removePrefix(result, "/");
+        }
+        return filePath;
+    }
+
+    /**
      * 读文件内容
      *
      * @param filePath    路径
@@ -830,9 +879,9 @@ public class FileUtil {
      * @throws IORuntimeException IO异常
      * @since 4.0.5
      */
-    /*public static File writeUtf8Map(Map<?, ?> map, File file, String kvSeparator, boolean isAppend) throws IORuntimeException {
-        return FileWriter.create(file, CharsetUtil.CHARSET_UTF_8).writeMap(map, kvSeparator, isAppend);
-    }*/
+    public static File writeUtf8Map(Map<?, ?> map, File file, String kvSeparator, boolean isAppend) throws IORuntimeException {
+        return writeMap(map, file, Charset.forName("UTF-8"), kvSeparator, isAppend);
+    }
 
     /**
      * 将Map写入文件，每个键值对为一行，一行中键与值之间使用kvSeparator分隔
@@ -846,9 +895,23 @@ public class FileUtil {
      * @throws IORuntimeException IO异常
      * @since 4.0.5
      */
-    /*public static File writeMap(Map<?, ?> map, File file, Charset charset, String kvSeparator, boolean isAppend) throws IORuntimeException {
-        return FileWriter.create(file, charset).writeMap(map, kvSeparator, isAppend);
-    }*/
+    public static File writeMap(Map<?, ?> map, File file, Charset charset, String kvSeparator, boolean isAppend) throws IORuntimeException {
+        if(null == kvSeparator) {
+            kvSeparator = " = ";
+        }
+        try(PrintWriter writer  = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(FileUtil.file(file.getAbsolutePath()), isAppend), charset)))) {
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (null != entry) {
+                    writer.print(StrUtil.format("{}{}{}", entry.getKey(), kvSeparator, entry.getValue()));
+                    printNewLine(writer, null);
+                    writer.flush();
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return file;
+    }
 
 
     /**
@@ -859,9 +922,9 @@ public class FileUtil {
      * @return 目标文件
      * @throws IORuntimeException IO异常
      */
-    /*public static File writeBytes(byte[] data, String path) throws IORuntimeException {
+    public static File writeBytes(byte[] data, String path) throws IORuntimeException {
         return writeBytes(data, file(path));
-    }*/
+    }
 
     /**
      * 写数据到文件中
@@ -871,9 +934,9 @@ public class FileUtil {
      * @return 目标文件
      * @throws IORuntimeException IO异常
      */
-    /*public static File writeBytes(byte[] data, File dest) throws IORuntimeException {
+    public static File writeBytes(byte[] data, File dest) throws IORuntimeException {
         return writeBytes(data, dest, 0, data.length, false);
-    }*/
+    }
 
     /**
      * 写入数据到文件
@@ -886,9 +949,19 @@ public class FileUtil {
      * @return 目标文件
      * @throws IORuntimeException IO异常
      */
-    /*public static File writeBytes(byte[] data, File dest, int off, int len, boolean isAppend) throws IORuntimeException {
-        return FileWriter.create(dest).write(data, off, len, isAppend);
-    }*/
+    public static File writeBytes(byte[] data, File dest, int off, int len, boolean isAppend) throws IORuntimeException {
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(FileUtil.file(dest.getAbsolutePath()), isAppend);
+            out.write(data, off, len);
+            out.flush();
+        }catch(IOException e){
+            throw new IORuntimeException(e);
+        } finally {
+            IOUtil.close(out);
+        }
+        return dest;
+    }
 
     /**
      * 将流的内容写入文件<br>
@@ -898,9 +971,18 @@ public class FileUtil {
      * @return dest
      * @throws IORuntimeException IO异常
      */
-    /*public static File writeFromStream(InputStream in, File dest) throws IORuntimeException {
-        return FileWriter.create(dest).writeFromStream(in);
-    }*/
+    public static File writeFromStream(InputStream in, File dest) throws IORuntimeException {
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(file(dest.getAbsolutePath()));
+            IOUtil.copy(in, out);
+        }catch (IOException e) {
+            throw new IORuntimeException(e);
+        } finally {
+            IOUtil.close(out);
+        }
+        return dest;
+    }
 
     /**
      * 将流的内容写入文件<br>
@@ -910,9 +992,9 @@ public class FileUtil {
      * @return 目标文件
      * @throws IORuntimeException IO异常
      */
-    /*public static File writeFromStream(InputStream in, String fullFilePath) throws IORuntimeException {
+    public static File writeFromStream(InputStream in, String fullFilePath) throws IORuntimeException {
         return writeFromStream(in, file(fullFilePath));
-    }*/
+    }
 
     /**
      * 将文件写入流中
@@ -922,9 +1004,18 @@ public class FileUtil {
      * @return 目标文件
      * @throws IORuntimeException IO异常
      */
-    /*public static File writeToStream(File file, OutputStream out) throws IORuntimeException {
-        return FileReader.create(file).writeToStream(out);
-    }*/
+    public static File writeToStream(File file, OutputStream out) throws IORuntimeException {
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream(file);
+            IOUtil.copy(in, out);
+        }catch (IOException e) {
+            throw new IORuntimeException(e);
+        } finally {
+            IOUtil.close(in);
+        }
+        return file;
+    }
 
     /**
      * 将流的内容写入文件<br>
@@ -933,9 +1024,9 @@ public class FileUtil {
      * @param out 输出流
      * @throws IORuntimeException IO异常
      */
-    /*public static void writeToStream(String fullFilePath, OutputStream out) throws IORuntimeException {
-        writeToStream(touch(fullFilePath), out);
-    }*/
+    public static void writeToStream(String fullFilePath, OutputStream out) throws IORuntimeException {
+        writeToStream(file(fullFilePath), out);
+    }
 
 
 

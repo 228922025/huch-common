@@ -1,7 +1,7 @@
 package com.huch.common.collection;
 
 import com.huch.common.util.ArrayUtil;
-import com.huch.common.util.MapUtil;
+import com.huch.common.util.ReflectUtil;
 import com.huch.common.util.StrUtil;
 
 import java.util.*;
@@ -413,7 +413,7 @@ public class IterUtil {
 	 * @since 4.1.12
 	 */
 	public static <K, V> Map<K, V> toMap(Iterator<K> keys, Iterator<V> values, boolean isOrder) {
-		final Map<K, V> resultMap = MapUtil.newHashMap(isOrder);
+		final Map<K, V> resultMap = isOrder ? new LinkedHashMap<>(): new HashMap<>();
 		if (isNotEmpty(keys)) {
 			while (keys.hasNext()) {
 				resultMap.put(keys.next(), (null != values && values.hasNext()) ? values.next() : null);
@@ -509,39 +509,4 @@ public class IterUtil {
 		return null;
 	}
 
-	/**
-	 * 获得{@link Iterable}对象的元素类型（通过第一个非空元素判断）<br>
-	 * 注意，此方法至少会调用多次next方法
-	 * 
-	 * @param iterable {@link Iterable}
-	 * @return 元素类型，当列表为空或元素全部为null时，返回null
-	 */
-	public static Class<?> getElementType(Iterable<?> iterable) {
-		if (null != iterable) {
-			final Iterator<?> iterator = iterable.iterator();
-			return getElementType(iterator);
-		}
-		return null;
-	}
-
-	/**
-	 * 获得{@link Iterator}对象的元素类型（通过第一个非空元素判断）<br>
-	 * 注意，此方法至少会调用多次next方法
-	 * 
-	 * @param iterator {@link Iterator}
-	 * @return 元素类型，当列表为空或元素全部为null时，返回null
-	 */
-	public static Class<?> getElementType(Iterator<?> iterator) {
-		final Iterator<?> iter2 = new CopiedIter<>(iterator);
-		if (null != iter2) {
-			Object t;
-			while (iter2.hasNext()) {
-				t = iter2.next();
-				if (null != t) {
-					return t.getClass();
-				}
-			}
-		}
-		return null;
-	}
 }

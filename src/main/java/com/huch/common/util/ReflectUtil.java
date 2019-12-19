@@ -1,5 +1,6 @@
 package com.huch.common.util;
 
+import com.huch.common.collection.CollUtil;
 import com.huch.common.exception.UtilException;
 
 import java.lang.reflect.Constructor;
@@ -18,12 +19,12 @@ import java.util.Set;
  */
 public class ReflectUtil {
 
-	/** 构造对象缓存 */
-	private static final SimpleCache<Class<?>, Constructor<?>[]> CONSTRUCTORS_CACHE = new SimpleCache<>();
-	/** 字段缓存 */
-	private static final SimpleCache<Class<?>, Field[]> FIELDS_CACHE = new SimpleCache<>();
-	/** 方法缓存 */
-	private static final SimpleCache<Class<?>, Method[]> METHODS_CACHE = new SimpleCache<>();
+	// /** 构造对象缓存 */
+	// private static final SimpleCache<Class<?>, Constructor<?>[]> CONSTRUCTORS_CACHE = new SimpleCache<>();
+	// /** 字段缓存 */
+	// private static final SimpleCache<Class<?>, Field[]> FIELDS_CACHE = new SimpleCache<>();
+	// /** 方法缓存 */
+	// private static final SimpleCache<Class<?>, Method[]> METHODS_CACHE = new SimpleCache<>();
 
 	// --------------------------------------------------------------------------------------------------------- Constructor
 	/**
@@ -64,13 +65,11 @@ public class ReflectUtil {
 	@SuppressWarnings("unchecked")
 	public static <T> Constructor<T>[] getConstructors(Class<T> beanClass) throws SecurityException {
 		Assert.notNull(beanClass);
-		Constructor<?>[] constructors = CONSTRUCTORS_CACHE.get(beanClass);
+		Constructor<?>[] constructors = beanClass.getConstructors();
 		if (null != constructors) {
 			return (Constructor<T>[]) constructors;
 		}
-
-		constructors = getConstructorsDirectly(beanClass);
-		return (Constructor<T>[]) CONSTRUCTORS_CACHE.put(beanClass, constructors);
+		return null;
 	}
 
 	/**
@@ -127,13 +126,11 @@ public class ReflectUtil {
 	 * @throws SecurityException 安全检查异常
 	 */
 	public static Field[] getFields(Class<?> beanClass) throws SecurityException {
-		Field[] allFields = FIELDS_CACHE.get(beanClass);
+		Field[] allFields = beanClass.getFields();
 		if (null != allFields) {
 			return allFields;
 		}
-
-		allFields = getFieldsDirectly(beanClass, true);
-		return FIELDS_CACHE.put(beanClass, allFields);
+		return null;
 	}
 
 	/**
@@ -220,51 +217,6 @@ public class ReflectUtil {
 		return null;
 	}
 
-	/**
-	 * 设置字段值
-	 * 
-	 * @param obj 对象
-	 * @param fieldName 字段名
-	 * @param value 值，值类型必须与字段类型匹配，不会自动转换对象类型
-	 * @throws UtilException 包装IllegalAccessException异常
-	 */
-	public static void setFieldValue(Object obj, String fieldName, Object value) throws UtilException {
-		Assert.notNull(obj);
-		Assert.notBlank(fieldName);
-		setFieldValue(obj, getField(obj.getClass(), fieldName), value);
-	}
-
-	/**
-	 * 设置字段值
-	 * 
-	 * @param obj 对象
-	 * @param field 字段
-	 * @param value 值，值类型必须与字段类型匹配，不会自动转换对象类型
-	 * @throws UtilException UtilException 包装IllegalAccessException异常
-	 */
-	public static void setFieldValue(Object obj, Field field, Object value) throws UtilException {
-		Assert.notNull(obj);
-		Assert.notNull(field);
-		field.setAccessible(true);
-		
-		if(null != value) {
-			Class<?> fieldType = field.getType();
-			if(false == fieldType.isAssignableFrom(value.getClass())) {
-				//对于类型不同的字段，尝试转换，转换失败则使用原对象类型
-				final Object targetValue = Convert.convert(fieldType, value);
-				if(null != targetValue) {
-					value = targetValue;
-				}
-			}
-		}
-		
-		try {
-			field.set(obj, value);
-		} catch (IllegalAccessException e) {
-			throw new UtilException(e, "IllegalAccess for {}.{}", obj.getClass(), field.getName());
-		}
-	}
-
 	// --------------------------------------------------------------------------------------------------------- method
 	/**
 	 * 获得指定类本类及其父类中的Public方法名<br>
@@ -292,67 +244,6 @@ public class ReflectUtil {
 	 */
 	public static Method[] getPublicMethods(Class<?> clazz) {
 		return null == clazz ? null : clazz.getMethods();
-	}
-
-	/**
-	 * 获得指定类过滤后的Public方法列表
-	 * 
-	 * @param clazz 查找方法的类
-	 * @param filter 过滤器
-	 * @return 过滤后的方法列表
-	 */
-	public static List<Method> getPublicMethods(Class<?> clazz, Filter<Method> filter) {
-		if (null == clazz) {
-			return null;
-		}
-
-		final Method[] methods = getPublicMethods(clazz);
-		List<Method> methodList;
-		if (null != filter) {
-			methodList = new ArrayList<>();
-			for (Method method : methods) {
-				if (filter.accept(method)) {
-					methodList.add(method);
-				}
-			}
-		} else {
-			methodList = CollectionUtil.newArrayList(methods);
-		}
-		return methodList;
-	}
-
-	/**
-	 * 获得指定类过滤后的Public方法列表
-	 * 
-	 * @param clazz 查找方法的类
-	 * @param excludeMethods 不包括的方法
-	 * @return 过滤后的方法列表
-	 */
-	public static List<Method> getPublicMethods(Class<?> clazz, Method... excludeMethods) {
-		final HashSet<Method> excludeMethodSet = CollectionUtil.newHashSet(excludeMethods);
-		return getPublicMethods(clazz, new Filter<Method>() {
-			@Override
-			public boolean accept(Method method) {
-				return false == excludeMethodSet.contains(method);
-			}
-		});
-	}
-
-	/**
-	 * 获得指定类过滤后的Public方法列表
-	 * 
-	 * @param clazz 查找方法的类
-	 * @param excludeMethodNames 不包括的方法名列表
-	 * @return 过滤后的方法列表
-	 */
-	public static List<Method> getPublicMethods(Class<?> clazz, String... excludeMethodNames) {
-		final HashSet<String> excludeMethodNameSet = CollectionUtil.newHashSet(excludeMethodNames);
-		return getPublicMethods(clazz, new Filter<Method>() {
-			@Override
-			public boolean accept(Method method) {
-				return false == excludeMethodNameSet.contains(method.getName());
-			}
-		});
 	}
 
 	/**
@@ -542,35 +433,18 @@ public class ReflectUtil {
 	}
 
 	/**
-	 * 获得指定类过滤后的Public方法列表
-	 * 
-	 * @param clazz 查找方法的类
-	 * @param filter 过滤器
-	 * @return 过滤后的方法列表
-	 * @throws SecurityException 安全异常
-	 */
-	public static Method[] getMethods(Class<?> clazz, Filter<Method> filter) throws SecurityException {
-		if (null == clazz) {
-			return null;
-		}
-		return ArrayUtil.filter(getMethods(clazz), filter);
-	}
-
-	/**
 	 * 获得一个类中所有方法列表，包括其父类中的方法
-	 * 
+	 *
 	 * @param beanClass 类
 	 * @return 方法列表
 	 * @throws SecurityException 安全检查异常
 	 */
 	public static Method[] getMethods(Class<?> beanClass) throws SecurityException {
-		Method[] allMethods = METHODS_CACHE.get(beanClass);
+		Method[] allMethods = beanClass.getMethods();
 		if (null != allMethods) {
 			return allMethods;
 		}
-
-		allMethods = getMethodsDirectly(beanClass, true);
-		return METHODS_CACHE.put(beanClass, allMethods);
+		return null;
 	}
 
 	/**

@@ -1,11 +1,8 @@
 package com.huch.common.collection;
 
-import com.huch.common.util.MapUtil;
+import com.huch.common.util.ArrayUtil;
 
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author huchanghua
@@ -38,10 +35,20 @@ public class CollUtil{
      *
      * @param map 集合
      * @return 是否为空
-     * @see com.huch.common.util.MapUtil#isEmpty(Map)
      */
     public static boolean isEmpty(Map<?, ?> map) {
         return MapUtil.isEmpty(map);
+    }
+
+    /**
+     * Iterable是否为空
+     *
+     * @param iterable Iterable对象
+     * @return 是否为空
+     * @see IterUtil#isEmpty(Iterable)
+     */
+    public static boolean isEmpty(Iterable<?> iterable) {
+        return IterUtil.isEmpty(iterable);
     }
 
     /**
@@ -81,4 +88,49 @@ public class CollUtil{
     public static <T> String join(Iterator<T> iterator, CharSequence conjunction) {
         return IterUtil.join(iterator, conjunction);
     }
+
+    /**
+     * 创建一个 ArrayList
+     * @param values
+     * @param <T>
+     * @return
+     */
+    public static <T> ArrayList<T> createArrayList(T... values){
+        if(ArrayUtil.isEmpty(values)){
+            return new ArrayList<T>();
+        }
+        ArrayList<T> list = new ArrayList<>(values.length);
+        for (T t : values) {
+            list.add(t);
+        }
+        return list;
+    }
+
+    /**
+     * 创建一个 ArrayList
+     * @param iterator
+     * @param <T>
+     * @return
+     */
+    public static <T> ArrayList<T> createArrayList(Iterator<T> iterator){
+        ArrayList<T> list = new ArrayList<>();
+        if(null ==  iterator){
+            return list;
+        }
+        while (iterator.hasNext()) {
+            list.add(iterator.next());
+        }
+        return list;
+    }
+
+    /**
+     * 创建一个 ArrayList
+     * @param iterable
+     * @param <T>
+     * @return
+     */
+    public static <T> ArrayList<T> createArrayList(Iterable<T> iterable) {
+        return createArrayList(iterable.iterator());
+    }
+
 }

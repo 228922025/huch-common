@@ -1,13 +1,11 @@
 package com.huch.common.util;
 
+import com.huch.common.collection.IterUtil;
+import com.huch.common.collection.MapUtil;
 import com.huch.common.exception.UtilException;
-import com.huch.common.io.FastByteArrayOutputStream;
 import com.huch.common.io.IOUtil;
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -273,7 +271,27 @@ public class ObjectUtil {
     }
 
 
-
+    /**
+     * 克隆对象<br>
+     * 如果对象实现Cloneable接口，调用其clone方法<br>
+     * 如果实现Serializable接口，执行深度克隆<br>
+     * 否则返回<code>null</code>
+     *
+     * @param <T> 对象类型
+     * @param obj 被克隆对象
+     * @return 克隆后的对象
+     */
+    public static <T> T clone(T obj) {
+        T result = ArrayUtil.clone(obj);
+        if (null == result) {
+            if (obj instanceof Cloneable) {
+                result = ReflectUtil.invoke(obj, "clone");
+            } else {
+                result = cloneByStream(obj);
+            }
+        }
+        return result;
+    }
 
 
 
@@ -297,7 +315,7 @@ public class ObjectUtil {
         if (null == obj || false == (obj instanceof Serializable)) {
             return null;
         }
-        final FastByteArrayOutputStream byteOut = new FastByteArrayOutputStream();
+        final ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         ObjectOutputStream out = null;
         try {
             out = new ObjectOutputStream(byteOut);
@@ -325,7 +343,7 @@ public class ObjectUtil {
             return null;
         }
 
-        FastByteArrayOutputStream byteOut = new FastByteArrayOutputStream();
+        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         ObjectOutputStream oos = null;
         try {
             oos = new ObjectOutputStream(byteOut);

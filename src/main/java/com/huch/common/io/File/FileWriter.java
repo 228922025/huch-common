@@ -3,7 +3,9 @@ package com.huch.common.io.File;
 import com.huch.common.io.FileUtil;
 import com.huch.common.io.IORuntimeException;
 import com.huch.common.io.IOUtil;
+import com.huch.common.util.CharsetUtil;
 import com.huch.common.util.StrUtil;
+import org.springframework.util.Assert;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -280,7 +282,7 @@ public class FileWriter extends FileWrapper{
 	public File write(byte[] data, int off, int len, boolean isAppend) throws IORuntimeException {
 		FileOutputStream out = null;
 		try {
-			out = new FileOutputStream(FileUtil.file(file), isAppend);
+			out = new FileOutputStream(file, isAppend);
 			out.write(data, off, len);
 			out.flush();
 		}catch(IOException e){
@@ -302,7 +304,7 @@ public class FileWriter extends FileWrapper{
 	public File writeFromStream(InputStream in) throws IORuntimeException {
 		FileOutputStream out = null;
 		try {
-			out = new FileOutputStream(FileUtil.touch(file));
+			out = new FileOutputStream(file);
 			IOUtil.copy(in, out);
 		}catch (IOException e) {
 			throw new IORuntimeException(e);
@@ -320,7 +322,7 @@ public class FileWriter extends FileWrapper{
 	 */
 	public BufferedOutputStream getOutputStream() throws IORuntimeException {
 		try {
-			return new BufferedOutputStream(new FileOutputStream(FileUtil.touch(file)));
+			return new BufferedOutputStream(new FileOutputStream(file));
 		} catch (IOException e) {
 			throw new IORuntimeException(e);
 		}
@@ -335,7 +337,7 @@ public class FileWriter extends FileWrapper{
 	 */
 	public BufferedWriter getWriter(boolean isAppend) throws IORuntimeException {
 		try {
-			return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(FileUtil.touch(file), isAppend), charset));
+			return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, isAppend), charset));
 		} catch (Exception e) {
 			throw new IORuntimeException(e);
 		}

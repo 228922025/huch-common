@@ -6,7 +6,7 @@
 
     <groupId>com.huch.common</groupId>
     <artifactId>huch-common</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <packaging>jar</packaging>
 
     <!--设定主仓库，按设定顺序进行查找，可多设置 maven私服代理中央仓库-->
@@ -96,19 +96,18 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.10</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch -->
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
             <version>2.3.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-elasticsearch</artifactId>
@@ -122,11 +121,6 @@
             <version>4.12</version>
         </dependency>
 
-            <!--<dependency>-->
-                <!--<groupId>e-iceblue</groupId>-->
-                <!--<artifactId>spire.doc</artifactId>-->
-                <!--<version>2.2.0</version>-->
-            <!--</dependency>-->
 
     </dependencies>
 

@@ -574,10 +574,11 @@ public class ZipUtil {
 			in = new BufferedInputStream(new FileInputStream(file));
 			return gzip(in, (int) file.length());
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		} finally {
 			IOUtil.close(in);
 		}
+
 	}
 
 	/**
@@ -708,6 +709,7 @@ public class ZipUtil {
 		} finally {
 			IOUtil.close(in);
 		}
+		return null;
 	}
 
 	/**

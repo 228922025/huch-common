@@ -1,8 +1,10 @@
 package com.huch.common.collection;
 
+import com.huch.common.util.ObjectUtil;
 import com.huch.common.util.ReflectUtil;
 import com.huch.common.util.StrUtil;
 
+import java.security.Key;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -38,6 +40,7 @@ public class MapUtil {
 	public static boolean isNotEmpty(Map<?, ?> map) {
 		return null != map && false == map.isEmpty();
 	}
+	
 
 	// ----------------------------------------------------------------------------------------------- new HashMap
 	/**
@@ -285,7 +288,7 @@ public class MapUtil {
 				key = entry.getKey();
 				valueList = resultMap.get(key);
 				if (null == valueList) {
-					valueList = CollectionUtil.newArrayList(entry.getValue());
+					valueList = CollUtil.createArrayList(entry.getValue());
 					resultMap.put(key, valueList);
 				} else {
 					valueList.add(entry.getValue());
@@ -340,7 +343,7 @@ public class MapUtil {
 			List<V> vList;
 			int vListSize;
 			for (Entry<K, ? extends Iterable<V>> entry : listMap.entrySet()) {
-				vList = CollectionUtil.newArrayList(entry.getValue());
+				vList = CollUtil.createArrayList(entry.getValue());
 				vListSize = vList.size();
 				if (index < vListSize) {
 					map.put(entry.getKey(), vList.get(index));
@@ -368,7 +371,16 @@ public class MapUtil {
 	 * @since 3.3.1
 	 */
 	public static <K, V> Map<K, V> toCamelCaseMap(Map<K, V> map) {
-		return (map instanceof LinkedHashMap) ? new CamelCaseLinkedMap<>(map) : new CamelCaseMap<>(map);
+		Map<K, V> result =  map instanceof LinkedHashMap ? new LinkedHashMap<>() : new HashMap<>();
+		Set<Entry<K, V>> set = map.entrySet();
+		for (Entry<K, V> entry : set) {
+			K key = entry.getKey();
+			if(key instanceof String){
+				result.put((K) StrUtil.toCamelCase(key.toString()), entry.getValue());
+			}
+
+		}
+		return  result;
 	}
 
 	/**
@@ -439,7 +451,7 @@ public class MapUtil {
 	 * @since 3.1.1
 	 */
 	public static <K, V> String join(Map<K, V> map, String separator, String keyValueSeparator, boolean isIgnoreNull) {
-		final StringBuilder strBuilder = StrUtil.builder();
+		final StringBuilder strBuilder = new StringBuilder();
 		boolean isFirst = true;
 		for (Entry<K, V> entry : map.entrySet()) {
 			if (false == isIgnoreNull || entry.getKey() != null && entry.getValue() != null) {
@@ -448,140 +460,10 @@ public class MapUtil {
 				} else {
 					strBuilder.append(separator);
 				}
-				strBuilder.append(Convert.toStr(entry.getKey())).append(keyValueSeparator).append(Convert.toStr(entry.getValue()));
+				strBuilder.append(entry.getKey()).append(keyValueSeparator).append(entry.getValue());
 			}
 		}
 		return strBuilder.toString();
-	}
-
-	// ----------------------------------------------------------------------------------------------- filter
-	/**
-	 * 过滤<br>
-	 * 过滤过程通过传入的Editor实现来返回需要的元素内容，这个Editor实现可以实现以下功能：
-	 *
-	 * <pre>
-	 * 1、过滤出需要的对象，如果返回null表示这个元素对象抛弃
-	 * 2、修改元素对象，返回集合中为修改后的对象
-	 * </pre>
-	 *
-	 * @param <K> Key类型
-	 * @param <V> Value类型
-	 * @param map Map
-	 * @param editor 编辑器接口
-	 * @return 过滤后的Map
-	 */
-	public static <K, V> Map<K, V> filter(Map<K, V> map, Editor<Entry<K, V>> editor) {
-		if(null == map || null == editor) {
-			return map;
-		}
-
-		final Map<K, V> map2 = ObjectUtil.clone(map);
-		if (isEmpty(map2)) {
-			return map2;
-		}
-
-		map2.clear();
-		Entry<K, V> modified;
-		for (Entry<K, V> entry : map.entrySet()) {
-			modified = editor.edit(entry);
-			if (null != modified) {
-				map2.put(modified.getKey(), modified.getValue());
-			}
-		}
-		return map2;
-	}
-
-	/**
-	 * 过滤<br>
-	 * 过滤过程通过传入的Editor实现来返回需要的元素内容，这个Filter实现可以实现以下功能：
-	 *
-	 * <pre>
-	 * 1、过滤出需要的对象，如果返回null表示这个元素对象抛弃
-	 * </pre>
-	 *
-	 * @param <K> Key类型
-	 * @param <V> Value类型
-	 * @param map Map
-	 * @param filter 编辑器接口
-	 * @return 过滤后的Map
-	 * @since 3.1.0
-	 */
-	public static <K, V> Map<K, V> filter(Map<K, V> map, Filter<Entry<K, V>> filter) {
-		if(null == map || null == filter) {
-			return map;
-		}
-
-		final Map<K, V> map2 = ObjectUtil.clone(map);
-		if (isEmpty(map2)) {
-			return map2;
-		}
-
-		map2.clear();
-		for (Entry<K, V> entry : map.entrySet()) {
-			if (filter.accept(entry)) {
-				map2.put(entry.getKey(), entry.getValue());
-			}
-		}
-		return map2;
-	}
-
-	/**
-	 * 过滤Map保留指定键值对，如果键不存在跳过
-	 *
-	 * @param <K> Key类型
-	 * @param <V> Value类型
-	 * @param map 原始Map
-	 * @param keys 键列表
-	 * @return Map 结果，结果的Map类型与原Map保持一致
-	 * @since 4.0.10
-	 */
-	@SuppressWarnings("unchecked")
-	public static <K, V> Map<K, V> filter(Map<K, V> map, K... keys) {
-		final Map<K, V> map2 = ObjectUtil.clone(map);
-		if (isEmpty(map2)) {
-			return map2;
-		}
-
-		map2.clear();
-		for (K key : keys) {
-			if(map.containsKey(key)) {
-				map2.put(key, map.get(key));
-			}
-		}
-		return map2;
-	}
-
-	/**
-	 * Map的键和值互换
-	 *
-	 * @param <T> 键和值类型
-	 * @param map Map对象，键值类型必须一致
-	 * @return 互换后的Map
-	 * @since 3.2.2
-	 */
-	public static <T> Map<T, T> reverse(Map<T, T> map) {
-		return filter(map, new Editor<Entry<T, T>>() {
-			@Override
-			public Entry<T, T> edit(final Entry<T, T> t) {
-				return new Entry<T, T>() {
-
-					@Override
-					public T getKey() {
-						return t.getValue();
-					}
-
-					@Override
-					public T getValue() {
-						return t.getKey();
-					}
-
-					@Override
-					public T setValue(T value) {
-						throw new UnsupportedOperationException("Unsupported setValue method !");
-					}
-				};
-			}
-		});
 	}
 
 	/**
@@ -646,224 +528,6 @@ public class MapUtil {
 		return result;
 	}
 
-	/**
-	 * 创建代理Map<br>
-	 * {@link MapProxy}对Map做一次包装，提供各种getXXX方法
-	 * 
-	 * @param map 被代理的Map
-	 * @return {@link MapProxy}
-	 * @since 3.2.0
-	 */
-	public static MapProxy createProxy(Map<?, ?> map) {
-		return MapProxy.create(map);
-	}
-	
-	/**
-	 * 创建Map包装类MapWrapper<br>
-	 * {@link MapWrapper}对Map做一次包装
-	 * 
-	 * @param map 被代理的Map
-	 * @return {@link MapWrapper}
-	 * @since 4.5.4
-	 */
-	public static <K, V> MapWrapper<K, V> wrap(Map<K, V> map) {
-		return new MapWrapper<K, V>(map);
-	}
-
-	// ----------------------------------------------------------------------------------------------- builder
-	/**
-	 * 创建链接调用map
-	 * 
-	 * @param <K> Key类型
-	 * @param <V> Value类型
-	 * @return map创建类
-	 */
-	public static <K, V> MapBuilder<K, V> builder() {
-		return builder(new HashMap<K, V>());
-	}
-
-	/**
-	 * 创建链接调用map
-	 * 
-	 * @param <K> Key类型
-	 * @param <V> Value类型
-	 * @param map 实际使用的map
-	 * @return map创建类
-	 */
-	public static <K, V> MapBuilder<K, V> builder(Map<K, V> map) {
-		return new MapBuilder<>(map);
-	}
-
-	/**
-	 * 创建链接调用map
-	 * 
-	 * @param <K> Key类型
-	 * @param <V> Value类型
-	 * @param k key
-	 * @param v value
-	 * @return map创建类
-	 */
-	public static <K, V> MapBuilder<K, V> builder(K k, V v) {
-		return (builder(new HashMap<K, V>())).put(k, v);
-	}
-
-	/**
-	 * 获取Map的部分key生成新的Map
-	 * 
-	 * @param <K> Key类型
-	 * @param <V> Value类型
-	 * @param map Map
-	 * @param keys 键列表
-	 * @return 新Map，只包含指定的key
-	 * @since 4.0.6
-	 */
-	@SuppressWarnings("unchecked")
-	public static <K, V> Map<K, V> getAny(Map<K, V> map, final K... keys) {
-		return filter(map, new Filter<Entry<K, V>>() {
-
-			@Override
-			public boolean accept(Entry<K, V> entry) {
-				return ArrayUtil.contains(keys, entry.getKey());
-			}
-		});
-	}
-	
-	/**
-	 * 获取Map指定key的值，并转换为字符串
-	 * 
-	 * @param map Map
-	 * @param key 键
-	 * @return 值
-	 * @since 4.0.6
-	 */
-	public static String getStr(Map<?, ?> map, Object key) {
-		return get(map, key, String.class);
-	}
-	
-	/**
-	 * 获取Map指定key的值，并转换为Integer
-	 * 
-	 * @param map Map
-	 * @param key 键
-	 * @return 值
-	 * @since 4.0.6
-	 */
-	public static Integer getInt(Map<?, ?> map, Object key) {
-		return get(map, key, Integer.class);
-	}
-	
-	/**
-	 * 获取Map指定key的值，并转换为Double
-	 * 
-	 * @param map Map
-	 * @param key 键
-	 * @return 值
-	 * @since 4.0.6
-	 */
-	public static Double getDouble(Map<?, ?> map, Object key) {
-		return get(map, key, Double.class);
-	}
-	
-	/**
-	 * 获取Map指定key的值，并转换为Float
-	 * 
-	 * @param map Map
-	 * @param key 键
-	 * @return 值
-	 * @since 4.0.6
-	 */
-	public static Float getFloat(Map<?, ?> map, Object key) {
-		return get(map, key, Float.class);
-	}
-	
-	/**
-	 * 获取Map指定key的值，并转换为Short
-	 * 
-	 * @param map Map
-	 * @param key 键
-	 * @return 值
-	 * @since 4.0.6
-	 */
-	public static Short getShort(Map<?, ?> map, Object key) {
-		return get(map, key, Short.class);
-	}
-	
-	/**
-	 * 获取Map指定key的值，并转换为Bool
-	 * 
-	 * @param map Map
-	 * @param key 键
-	 * @return 值
-	 * @since 4.0.6
-	 */
-	public static Boolean getBool(Map<?, ?> map, Object key) {
-		return get(map, key, Boolean.class);
-	}
-	
-	/**
-	 * 获取Map指定key的值，并转换为Character
-	 * 
-	 * @param map Map
-	 * @param key 键
-	 * @return 值
-	 * @since 4.0.6
-	 */
-	public static Character getChar(Map<?, ?> map, Object key) {
-		return get(map, key, Character.class);
-	}
-	
-	/**
-	 * 获取Map指定key的值，并转换为Long
-	 * 
-	 * @param map Map
-	 * @param key 键
-	 * @return 值
-	 * @since 4.0.6
-	 */
-	public static Long getLong(Map<?, ?> map, Object key) {
-		return get(map, key, Long.class);
-	}
-	
-	/**
-	 * 获取Map指定key的值，并转换为{@link Date}
-	 * 
-	 * @param map Map
-	 * @param key 键
-	 * @return 值
-	 * @since 4.1.2
-	 */
-	public static Date getDate(Map<?, ?> map, Object key) {
-		return get(map, key, Date.class);
-	}
-	
-	/**
-	 * 获取Map指定key的值，并转换为指定类型
-	 * 
-	 * @param <T> 目标值类型
-	 * @param map Map
-	 * @param key 键
-	 * @param type 值类型
-	 * @return 值
-	 * @since 4.0.6
-	 */
-	public static <T> T get(Map<?, ?> map, Object key, Class<T> type) {
-		return null == map ? null : Convert.convert(type, map.get(key));
-	}
-	
-	/**
-	 * 获取Map指定key的值，并转换为指定类型
-	 * 
-	 * @param <T> 目标值类型
-	 * @param map Map
-	 * @param key 键
-	 * @param type 值类型
-	 * @return 值
-	 * @since 4.5.12
-	 */
-	public static <T> T get(Map<?, ?> map, Object key, TypeReference<T> type) {
-		return null == map ? null : Convert.convert(type, map.get(key));
-	}
-	
 	/**
 	 * 重命名键<br>
 	 * 实现方式为一处然后重新put，当旧的key不存在直接返回<br>

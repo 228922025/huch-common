@@ -25,7 +25,6 @@ com/huch/common/util/HanziToPinyin.class
 com/huch/common/datasource/JdbcUtil.class
 com/huch/common/util/Arith.class
 com/huch/common/util/ShellUtil.class
-com/huch/common/http/HtmlUtil.class
 com/huch/common/demo/SearchReplace.class
 com/huch/common/collection/MapUtil.class
 com/huch/common/util/ClassUtil.class
@@ -38,7 +37,6 @@ com/huch/common/crypto/Base64.class
 com/huch/common/util/ZipUtil.class
 com/huch/common/date/DateStyle.class
 com/huch/common/util/CharsetUtil.class
-com/huch/common/http/HTMLFilter.class
 com/huch/common/exception/ExceptionUtil.class
 com/huch/common/poi/exceptions/POIException.class
 com/huch/common/collection/IterUtil.class
@@ -61,7 +59,9 @@ com/huch/common/crypto/Base64Encoder.class
 com/huch/common/crypto/RSA.class
 com/huch/common/io/StreamProgress.class
 com/huch/common/collection/IterUtil$1.class
+com/huch/common/html/HTMLFilter.class
 com/huch/common/util/HanziToPinyin$Token.class
+com/huch/common/html/HtmlUtil.class
 com/huch/common/util/CompareUtil.class
 com/huch/common/util/RandomUtil.class
 com/huch/common/util/UUID.class

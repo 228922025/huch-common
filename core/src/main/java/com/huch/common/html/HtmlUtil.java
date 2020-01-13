@@ -1,5 +1,6 @@
-package com.huch.common.http;
+package com.huch.common.html;
 
+import com.huch.common.html.HTMLFilter;
 import com.huch.common.util.StrUtil;
 
 

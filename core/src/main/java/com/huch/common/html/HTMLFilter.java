@@ -1,4 +1,4 @@
-package com.huch.common.http;
+package com.huch.common.html;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

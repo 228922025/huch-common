@@ -21,7 +21,6 @@
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/util/ClassUtil.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/util/ZipUtil.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/crypto/MD5.java
-/Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/http/HtmlUtil.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/io/File/LineSeparator.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/util/ArrayUtil.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/tree/TreeNodeTest.java
@@ -30,11 +29,11 @@
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/poi/word/DocReplace.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/io/FileTypeUtil.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/poi/exceptions/package-info.java
-/Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/http/HTMLFilter.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/io/FileUtil.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/io/NIOFileUtil.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/util/HexUtil.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/collection/CollectionUtil.java
+/Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/html/HTMLFilter.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/poi/exceptions/POIException.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/io/File/FileWrapper.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/crypto/AES.java
@@ -51,6 +50,7 @@
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/util/CharUtil.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/util/ReflectionUtil.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/datasource/JdbcUtil.java
+/Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/html/HtmlUtil.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/io/StreamProgress.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/util/ShellUtil.java
 /Users/huchanghua/Documents/IdeaProject/huch-common/core/src/main/java/com/huch/common/date/DateUtil.java

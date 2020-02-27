@@ -1,4 +1,4 @@
-package com.huch.test.classload;
+package com.huch.common.test.classload;
 
 import com.huch.common.crypto.MD5;
 

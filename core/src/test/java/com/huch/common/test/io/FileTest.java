@@ -1,4 +1,4 @@
-package com.huch.test.io;
+package com.huch.common.test.io;
 
 import com.huch.common.io.FileUtil;
 import com.huch.common.io.NIOFileUtil;

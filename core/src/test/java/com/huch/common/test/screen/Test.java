@@ -8,9 +8,7 @@
  * <author>          <time>          <version>          <desc>
  * 作者姓名           修改时间           版本号              描述
  */
-package com.huch.test.screen;
-
-import com.huch.common.screen.ScreenUtil;
+package com.huch.common.test.screen;
 
 import java.io.File;
 import java.io.IOException;

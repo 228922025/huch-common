@@ -1,4 +1,4 @@
-package com.huch.common.es;
+package com.huch.common.elasticsearch;
 
 import com.alibaba.fastjson.JSONObject;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;

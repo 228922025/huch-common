@@ -1,4 +1,4 @@
-package com.huch.common.es;
+package com.huch.common.elasticsearch;
 
 import org.junit.Test;
 

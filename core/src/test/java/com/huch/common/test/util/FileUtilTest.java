@@ -1,4 +1,4 @@
-package com.huch.test.util;
+package com.huch.common.test.util;
 
 import com.huch.common.io.FileUtil;
 import org.junit.Test;

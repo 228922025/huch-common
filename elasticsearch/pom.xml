@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.huch.common</groupId>
-    <artifactId>elaseicsearch</artifactId>
+    <artifactId>elasticsearch</artifactId>
     <version>7.6.1</version>
 
     <dependencies>

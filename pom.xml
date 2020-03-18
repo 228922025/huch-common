@@ -9,7 +9,7 @@
     <version>0.0.3</version>
 
     <modules>
-        <module>elaseicsearch</module>
+        <module>elasticsearch</module>
         <module>core</module>
     </modules>
     <packaging>pom</packaging>
@@ -53,13 +53,11 @@
 
 
     <dependencies>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
         </dependency>
-
     </dependencies>
 
     <distributionManagement>

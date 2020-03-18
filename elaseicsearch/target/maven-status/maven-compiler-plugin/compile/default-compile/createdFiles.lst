@@ -1,6 +1,0 @@
-com/huch/common/elasticsearch/ESClient.class
-com/huch/common/elasticsearch/ESUtil.class
-com/huch/common/elasticsearch/GroupBy.class
-com/huch/common/elasticsearch/EsSearch.class
-com/huch/common/elasticsearch/Repository.class
-com/huch/common/elasticsearch/EsConfig.class

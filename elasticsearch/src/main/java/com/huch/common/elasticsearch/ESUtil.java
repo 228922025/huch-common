@@ -42,7 +42,7 @@ public class ESUtil {
      * @param response
      * @return
      */
-    public static List<Map<String, Object>> parseToMap(SearchResponse response){
+    public static List<Map<String, Object>> parseToListMap(SearchResponse response){
         SearchHits searchHits = response.getHits();
         SearchHit[] hits = searchHits.getHits();
         List list = new ArrayList();
@@ -55,6 +55,24 @@ public class ESUtil {
             list.add(map);
         }
         return list;
+    }
+
+    /**
+     * 解析搜索结果到List String
+     * @param response
+     * @return
+     */
+    public static List<String> parseToListStr(SearchResponse response){
+        SearchHits searchHits = response.getHits();
+        SearchHit[] hits = searchHits.getHits();
+        List list = new ArrayList();
+        for (int i = 0; i < hits.length; i++) {
+            SearchHit hit = hits[i];
+            String str = hit.getSourceAsString();
+            list.add(str);
+        }
+        return list;
+
     }
 
 

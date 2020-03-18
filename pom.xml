@@ -9,7 +9,7 @@
     <version>0.0.3</version>
 
     <modules>
-        <module>elaseicsearch</module>
+        <module>elasticsearch</module>
         <module>core</module>
     </modules>
     <packaging>pom</packaging>

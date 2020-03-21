@@ -413,7 +413,7 @@ public class IterUtil {
 	 * @since 4.1.12
 	 */
 	public static <K, V> Map<K, V> toMap(Iterator<K> keys, Iterator<V> values, boolean isOrder) {
-		final Map<K, V> resultMap = isOrder ? new LinkedHashMap<>(): new HashMap<>();
+		final Map<K, V> resultMap = isOrder ? new LinkedHashMap<K, V>(): new HashMap<K, V>();
 		if (isNotEmpty(keys)) {
 			while (keys.hasNext()) {
 				resultMap.put(keys.next(), (null != values && values.hasNext()) ? values.next() : null);

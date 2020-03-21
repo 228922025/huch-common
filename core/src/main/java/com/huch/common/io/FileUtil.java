@@ -9,6 +9,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class FileUtil {
@@ -36,6 +37,14 @@ public class FileUtil {
     /** 当Path为文件形式时, path会加入一个表示文件的前缀 */
    public static final String PATH_FILE_PRE = "file:";
 
+
+    /**
+     * 生成随机文件名
+     * @return
+     */
+    public static String generateFileName() {
+        return UUID.randomUUID().toString();
+    }
 
     /**
      * 是否为Windows环境
@@ -121,7 +130,7 @@ public class FileUtil {
 	 * @return 文件列表
 	 */
     public static List<File> loopFiles(File file, FileFilter fileFilter) {
-        List<File> fileList = new ArrayList<>();
+        List<File> fileList = new ArrayList();
         if (null == file) {
             return fileList;
         } else if (false == file.exists()) {
@@ -505,6 +514,49 @@ public class FileUtil {
         } finally {
             IOUtil.close(reader);
         }
+    }
+
+    /**
+     * 写入文件
+     * @param filename 文件名
+     * @param inputStream
+     * @throws IOException
+     */
+    public static void write(String filename, InputStream inputStream) throws IOException {
+        OutputStream os = new FileOutputStream(filename);
+        byte[] buf = new byte[1024];
+        int len;
+        while (-1 != (len = inputStream.read(buf))) {
+            os.write(buf,0,len);
+        }
+        os.flush();
+        os.close();
+    }
+
+    /**
+     * 分块写入文件
+     * @param fileName 文件文
+     * @param fileSize 文件总大小
+     * @param inputStream 输入流
+     * @param blokSize 文件分块大小
+     * @param chunks 总分块数
+     * @param chunk 当前分块下标, 0开始
+     * @throws IOException
+     */
+    public static void writeWithBlok(String fileName, Long fileSize, InputStream inputStream, Long blokSize, Integer chunks, Integer chunk) throws IOException {
+        RandomAccessFile randomAccessFile = new RandomAccessFile(fileName,"rw");
+        randomAccessFile.setLength(fileSize);
+        if (chunk == chunks - 1 && chunk != 0) {
+            randomAccessFile.seek(chunk * (fileSize - blokSize) / chunk);
+        } else {
+            randomAccessFile.seek(chunk * blokSize);
+        }
+        byte[] buf = new byte[1024];
+        int len;
+        while (-1 != (len = inputStream.read(buf))) {
+            randomAccessFile.write(buf,0,len);
+        }
+        randomAccessFile.close();
     }
 
     /**

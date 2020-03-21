@@ -371,7 +371,7 @@ public class MapUtil {
 	 * @since 3.3.1
 	 */
 	public static <K, V> Map<K, V> toCamelCaseMap(Map<K, V> map) {
-		Map<K, V> result =  map instanceof LinkedHashMap ? new LinkedHashMap<>() : new HashMap<>();
+		Map<K, V> result =  map instanceof LinkedHashMap ? new LinkedHashMap<K, V>() : new HashMap<K, V>();
 		Set<Entry<K, V>> set = map.entrySet();
 		for (Entry<K, V> entry : set) {
 			K key = entry.getKey();

@@ -7,9 +7,12 @@
         <groupId>com.huch.common</groupId>
         <version>0.0.4</version>
     </parent>
+
+    <groupId>com.huch.common</groupId>
+    <artifactId>core</artifactId>
+    <version>0.0.6</version>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>core</artifactId>
     <build>
         <plugins>
             <plugin>

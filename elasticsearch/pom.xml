@@ -5,13 +5,13 @@
     <parent>
         <artifactId>huch-common</artifactId>
         <groupId>com.huch.common</groupId>
-        <version>0.0.3</version>
+        <version>0.0.4</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.huch.common</groupId>
     <artifactId>elasticsearch</artifactId>
     <version>7.6.1</version>
+    <modelVersion>4.0.0</modelVersion>
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->

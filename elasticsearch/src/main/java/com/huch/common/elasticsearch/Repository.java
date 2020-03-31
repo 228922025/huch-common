@@ -2,6 +2,7 @@ package com.huch.common.elasticsearch;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -11,6 +12,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.client.Cancellable;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
@@ -26,6 +28,8 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
@@ -37,7 +41,7 @@ import java.util.Map;
  * @create 2019-12-28-23:04
  */
 public class Repository {
-
+    private static Logger logger = LoggerFactory.getLogger(Repository.class);
     private RestHighLevelClient client;
 
     public Repository(RestHighLevelClient restHighLevelClient) {
@@ -111,7 +115,7 @@ public class Repository {
             System.out.println(acknowledged + "," + shardsAcknowledged);
         } catch (IOException e) {
             e.printStackTrace();
-            // logger.error("索引{}创建异常:" + e.getMessage(), index);
+            logger.error("索引{}创建异常:" + e.getMessage(), index);
             return false;
         }
         return true;
@@ -145,11 +149,15 @@ public class Repository {
     public boolean deleteIndex(String indexName) throws IOException {
         DeleteIndexRequest request = new DeleteIndexRequest(indexName);//指定要删除的索引名称
         //可选参数：
-        request.timeout(TimeValue.timeValueMinutes(2)); //设置超时，等待所有节点确认索引删除（使用TimeValue形式）
-        // request.timeout("2m"); //设置超时，等待所有节点确认索引删除（使用字符串形式）
+        //设置超时，等待所有节点确认索引删除（使用TimeValue形式）
+        request.timeout(TimeValue.timeValueMinutes(2));
+        // 设置超时，等待所有节点确认索引删除（使用字符串形式）
+        // request.timeout("2m");
 
-        request.masterNodeTimeout(TimeValue.timeValueMinutes(1));////连接master节点的超时时间(使用TimeValue方式)
-        // request.masterNodeTimeout("1m");//连接master节点的超时时间(使用字符串方式)
+        //连接master节点的超时时间(使用TimeValue方式)
+        request.masterNodeTimeout(TimeValue.timeValueMinutes(1));
+        //连接master节点的超时时间(使用字符串方式)
+        // request.masterNodeTimeout("1m");
 
         //设置IndicesOptions控制如何解决不可用的索引以及如何扩展通配符表达式
         request.indicesOptions(IndicesOptions.lenientExpandOpen());
@@ -161,11 +169,7 @@ public class Repository {
         } else {
             return false;
         }
-
     }
-
-    //创建mapping
-    //注意数据格式，此版本已经取去除String格式，改为text和keyword格式，其中text格式支持分词和建立索引，支持模糊查询和精确查询，不支持聚合，keyword不支持分词，支持模糊查询和精确查询，支持聚合查询，排序
 
     /**
      * 创建mapping
@@ -237,10 +241,9 @@ public class Repository {
 
 
     /**
-     * 创建数据
-     *
-     * @param index
-     * @param map
+     * 保存数据-同步
+     * @param index 索引
+     * @param map 数据
      * @throws Exception
      */
     public void save(String index, Map<String, Object> map) throws Exception {
@@ -249,22 +252,34 @@ public class Repository {
         request.source(JSON.toJSONString(map), XContentType.JSON);
         // 同步执行
         IndexResponse response = client.index(request, RequestOptions.DEFAULT);
+    }
 
-        // //异步方法不会阻塞并立即返回。
-        // ActionListener<IndexResponse> listener = new ActionListener<IndexResponse>() {
-        //     @Override
-        //     public void onResponse(IndexResponse indexResponse) {
-        //         //执行成功时调用。 Response以参数方式提供
-        //     }
-        //
-        //     @Override
-        //     public void onFailure(Exception e) {
-        //         //在失败的情况下调用。 引发的异常以参数方式提供
-        //     }
-        // };
-        // //异步执行索引请求需要将IndexRequest实例和ActionListener实例传递给异步方法：
-        // Cancellable cancellable = client.indexAsync(request, RequestOptions.DEFAULT, listener);
-        // System.out.println(cancellable);
+    /**
+     * 保存数据-异步
+     * @param index 索引
+     * @param map 数据
+     */
+    public void saveAsync(String index, Map<String, Object> map){
+        IndexRequest request = new IndexRequest(index);
+        request.id(map.get("id").toString());    //ID也可使用内部自动生成的 不过希望和数据库统一唯一业务ID
+        request.source(JSON.toJSONString(map), XContentType.JSON);
+
+        //异步方法不会阻塞并立即返回。
+        ActionListener<IndexResponse> listener = new ActionListener<IndexResponse>() {
+            @Override
+            public void onResponse(IndexResponse indexResponse) {
+                //执行成功时调用。 Response以参数方式提供
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                //在失败的情况下调用。 引发的异常以参数方式提供
+
+            }
+        };
+        //异步执行索引请求需要将IndexRequest实例和ActionListener实例传递给异步方法：
+        Cancellable cancellable = client.indexAsync(request, RequestOptions.DEFAULT, listener);
+        System.out.println(cancellable);
     }
 
 
@@ -280,6 +295,13 @@ public class Repository {
         return response.getSource();
     }
 
+    /**
+     * 搜索数据
+     * @param index
+     * @param keyword
+     * @return
+     * @throws IOException
+     */
     public SearchResponse search(String index, String keyword) throws IOException {
         SearchRequest searchRequest = new SearchRequest(index);
         QueryBuilder queryBuilder = QueryBuilders.queryStringQuery(keyword);
@@ -290,8 +312,7 @@ public class Repository {
 
 
     /**
-     * 多条件查询
-     *
+     * 多条件查询 and关系
      * @param mustMap
      * @param length
      * @return

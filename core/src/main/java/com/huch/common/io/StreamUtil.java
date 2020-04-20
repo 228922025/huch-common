@@ -1,7 +1,5 @@
 package com.huch.common.io;
 
-import org.hamcrest.core.Is;
-
 import java.io.*;
 
 /**

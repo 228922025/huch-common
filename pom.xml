@@ -14,20 +14,19 @@
     </modules>
     <packaging>pom</packaging>
 
-    <!--设定主仓库，按设定顺序进行查找，可多设置 maven私服代理中央仓库-->
-    <!--<repositories>
-        <repository>
-            <id>local</id>
-            <name>maven-public</name>
-            <url>http://192.1.1.20:7000/repository/maven-public/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-    </repositories>-->
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+        <!--打包时忽略测试代码-->
+        <maven.test.skip>true</maven.test.skip>
+
+        <!-- versions -->
+        <junit.version>4.12</junit.version>
+        <fastjson.version>1.2.68</fastjson.version>
+        <poi.version>4.1.2</poi.version>
+        <xerces.version>2.12.0</xerces.version>
+    </properties>
 
     <build>
         <plugins>
@@ -43,22 +42,28 @@
         </plugins>
     </build>
 
-    <properties>
-        <!-- versions -->
-        <poi.version>3.8</poi.version>
-        <xerces.version>2.12.0</xerces.version>
-        <!--打包时忽略测试代码-->
-        <maven.test.skip>true</maven.test.skip>
-    </properties>
-
-
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>${junit.version}</version>
         </dependency>
     </dependencies>
+
+    <!--设定主仓库，按设定顺序进行查找，可多设置 maven私服代理中央仓库-->
+    <!--<repositories>
+        <repository>
+            <id>local</id>
+            <name>maven-public</name>
+            <url>http://192.1.1.20:7000/repository/maven-public/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+    </repositories>-->
 
     <distributionManagement>
         <!--发布版本-->
